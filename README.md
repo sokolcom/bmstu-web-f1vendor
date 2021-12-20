@@ -2,7 +2,7 @@
 :computer: Web-приложение (дисциплина "Веб-программирование") :computer:
 
 ## :dart: Цель работы 
-Разработать приложение-агрегатор для покупки билетов на Гран-при [Формулы 1 :racing_car:](https://www.formula1.com/).
+Разработать приложение-агрегатор для покупки билетов на Гран-при [Формулы 1](https://www.formula1.com/) :racing_car: :racing_car: :racing_car:.
 
 
 
@@ -16,14 +16,24 @@
 
 
 ## :information_desk_person: Use-case diagrams
-* Неавторизованный пользователь
+* Неавторизованный пользователь  
+
 ![alt-text](media/unauth.png)
-* Авторизованный пользователь (покупатель)
+
+
+* Авторизованный пользователь (покупатель)  
+
 ![alt-text](media/auth_client.png)
-* Авторизованный пользователь (вендор)
+
+
+* Авторизованный пользователь (вендор)  
+
 ![alt-text](media/auth_vendor.png)
 
 
+
+
 ## :round_pushpin: ER-diagram
-ER-диаграмма в нотации Чена
+ER-диаграмма в нотации Чена  
+
 ![alt-text](media/er_chen.png)
