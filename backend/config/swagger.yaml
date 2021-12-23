@@ -1,0 +1,390 @@
+openapi: 3.0.0
+info:
+  description: F1 GP Ticket Vendor API (web labs)
+  version: "1.0.0"
+  title: F1-VENDOR API
+
+tags:
+  - name: User
+    description: auth for user
+  - name: GrandPrix
+    description: GP data manipulation
+  - name: Ticket
+    description: ticket data manipulation
+
+components:
+  schemas:
+    GrandPrix:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          title:
+            type: string
+          date:
+            type: string
+          vendor_id:
+            type: integer
+
+    Ticket:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          price:
+            type: integer
+          session:
+            type: integer
+          gp_id:
+            type: integer
+          in_stock:
+            type: boolean
+          
+
+    Success:
+      type: object
+      properties:
+        status:
+          type: string
+          example: 200
+        message:
+          type: string
+          example: Success
+
+    BadRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          example: 400
+        message:
+          type: string
+          example: Bad request
+
+    InternalError:
+      type: object
+      properties:
+        status:
+          type: string
+          example: 500
+        message:
+          type: string
+          example: Internal error
+
+paths:
+  /api/v1/users:
+    post:
+      tags:
+        - User
+      summary: Add a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+              required:
+                - username
+                - password
+                - role
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+
+  /api/v1/users/login:
+    post:
+      tags:
+        - User
+      summary: Allow user to log in
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses: 
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+
+  /api/v1/grands-prix:
+    get:
+      tags:
+        - GrandPrix
+      summary: Get all GPs
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrandPrix'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+    post:
+      tags:
+        - GrandPrix
+      summary: Create new GP
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                date:
+                  type: string
+                vendor_id:
+                  type: integer
+              required:
+                - name
+                - date
+                - vendor_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+
+  /api/v1/grands-prix/{gp_id}:
+    delete:
+      tags:
+        - GrandPrix
+      parameters:
+        - name: gp_id
+          in: path
+          required: true
+          schema:
+            type:
+              integer
+      summary: Delete GP
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+
+  /api/v1/tickets/{gp_id}:
+    get:
+      tags:
+        - Ticket
+      summary: Get tickets for the GP
+      parameters:
+        - name: gp_id
+          in: path
+          required: true
+          schema:
+            type:
+              integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+
+  /api/v1/tickets:
+    post:
+      tags:
+        - Ticket
+      summary: Create new ticket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price:
+                  type: integer
+                session:
+                  type: integer
+                gp_id:
+                  type: integer
+              required:
+                - price
+                - session
+                - gp_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+
+  /api/v1/tickets/{ticket_id}:
+    delete:
+      tags:
+        - Ticket
+      summary: Delete ticket
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema:
+            type:
+              integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+
+  /api/v1/tickets/buy:
+    patch:
+      tags:
+        - Ticket
+      summary: Buy ticket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket_id:
+                  type: integer
+              required:
+                - ticket_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: http://localhost:8888

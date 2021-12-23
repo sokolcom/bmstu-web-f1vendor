@@ -1,6 +1,7 @@
 from flask import Flask, request, send_from_directory, make_response
 from flask.json import jsonify
 from flask_cors import CORS
+from swagger_ui import api_doc
 
 from Repository.factory import RepositoryFactory
 from Domain.user import User
@@ -10,6 +11,8 @@ from Domain.ticket import Ticket, TicketDomain2DTOConverter
 
 app = Flask(__name__)
 cors = None
+
+api_doc(app, config_path='../config/swagger.yaml', url_prefix='/api/v1', title='Lab API doc')
 
 repository_factory = None
 user_repository = None
@@ -28,7 +31,7 @@ def send_ok():
 def send_error(error_code):
     error_message = None
     if error_code == 400:
-        error_message = "Invalid request"
+        error_message = "Bad request"
     else:
         error_message = "Internal error"
 
@@ -44,6 +47,12 @@ def send_error(error_code):
 def hello():
     return make_response(jsonify({ "ok": True, "result": "OH MY LORD MAX, OH MY LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORD!!!!!!!!!!!!!!" }), 200)
 
+
+@app.route("/api/v1/swagger/<path:path>")
+def send_index(path):
+    return send_from_directory("/home/sillyjoe/Документы/labs/lab_web/backend/static/dist/", path)
+
+#################################
 
 @app.route("/api/v1/users", methods=['POST'])
 def register_user():
