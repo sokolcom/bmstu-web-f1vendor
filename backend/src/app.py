@@ -20,12 +20,14 @@ gp_repository = None
 ticket_repository = None
 
 
-def send_ok():
+def send_ok(status_code, payload=None):
     response = {
         "ok": True,
-        "status_code": "200",
+        "status_code": str(status_code),
     }
-    return jsonify(response), 200
+    if payload:
+        response["payload"] = payload
+    return jsonify(response), status_code
 
 
 def send_error(error_code):
@@ -57,7 +59,7 @@ def send_index(path):
 @app.route("/api/v1/users", methods=['POST'])
 def register_user():
     req = request.json
-    if (not req) or ((not "username" in req) or (not "password" in req) or (not "role" in req)):
+    if (not req) or (not "username" in req) or (not "password" in req) or (not "role" in req):
         return send_error(400)
 
     users = user_repository.get()
@@ -75,13 +77,13 @@ def register_user():
         user_repository.create(new_user)
     except:
         return send_error(500)
-    return send_ok()
+    return send_ok(201)
 
 
 @app.route("/api/v1/users/login", methods=['POST'])
 def login_user():
     req = request.json
-    if (not req) or ((not 'username' in req) or (not 'password' in req)):
+    if (not req) or ((not "username" in req) or (not "password" in req)):
         return send_error(400)
 
     username = req["username"]
@@ -89,7 +91,7 @@ def login_user():
     users = user_repository.get()
     for user in users:
         if (user.username == username) and (user.password == password):
-            return send_ok()
+            return send_ok(202)
 
     return send_error(400)
 
@@ -127,7 +129,7 @@ def create_grandprix():
         gp_repository.create(new_gp)
     except:
         return send_error(500)
-    return send_ok()
+    return send_ok(201)
 
 
 @app.route("/api/v1/grands-prix/<int:gp_id>", methods=['DELETE'])
@@ -170,7 +172,7 @@ def create_ticket():
     except:
         return send_error(500)
     
-    return send_ok()
+    return send_ok(201)
 
 
 @app.route("/api/v1/tickets/<int:ticket_id>", methods=['DELETE'])
@@ -191,15 +193,17 @@ def buy_ticket():
 
     ticket_id = req["ticket_id"]
     try:
-        in_stock = ticket_repository.get(id=ticket_id)[0].in_stock
-        if in_stock:
+        ticket = ticket_repository.get(id=ticket_id)[0]
+        if ticket.in_stock:
             ticket_repository.buy(ticket_id)
         else:
             return send_error(400)
     except:
         return send_error(500)
 
-    return send_ok()
+    converter = TicketDomain2DTOConverter()
+    dto_ticket = converter.convert(ticket).to_dict()
+    return send_ok(200, payload=dto_ticket)
 
 
 @app.errorhandler(404)

@@ -15,5 +15,5 @@ class TicketDTO(BaseDTO):
             "price": self.price,
             "session": self.session,
             "gp_id": self.gp_id,
-            "in_stock": self.in_stock,
+            "in_stock": self.in_stock
         }
