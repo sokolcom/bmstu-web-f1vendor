@@ -145,7 +145,7 @@ def delete_grandprix(gp_id):
 
 @app.route("/api/v1/tickets/<int:gp_id>", methods=['GET'])
 def get_gp_tickets(gp_id):
-    tickets = ticket_repository.get(gp_id)
+    tickets = ticket_repository.get(gp_id=gp_id)
 
     converter = TicketDomain2DTOConverter()
     dto_tickets = list(map(lambda x: converter.convert(x).to_dict(), tickets))

@@ -20,10 +20,18 @@ class TicketRepository(BaseRepository):
         cursor = self.conn.cursor()
 
         if id:
-            cursor.execute(f'SELECT * FROM tickets WHERE id = {id};')
+            cursor.execute(
+                f'SELECT t.*, u.username \
+                FROM tickets t JOIN gps g ON t.gp_id = g.id JOIN users u on g.vendor_id = u.id \
+                WHERE id = {id};'
+            )
             tickets = cursor.fetchall()
         elif gp_id:
-            cursor.execute(f'SELECT * FROM tickets WHERE gp_id = {gp_id};')
+            cursor.execute(
+                f'SELECT t.*, u.username \
+                FROM tickets t JOIN gps g ON t.gp_id = g.id JOIN users u on g.vendor_id = u.id \
+                WHERE gp_id = {gp_id};'
+            )
             tickets = cursor.fetchall()
 
         converter = TicketDB2DomainConverter()

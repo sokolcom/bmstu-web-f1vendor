@@ -4,12 +4,13 @@ from DTO.ticket import TicketDTO
 
 
 class Ticket(BaseEntity):
-    def __init__(self, id, price, session, gp_id, in_stock):
+    def __init__(self, id, price, session, gp_id, in_stock, username):
         self.id = id
         self.price = price
         self.session = session
         self.gp_id = gp_id
         self.in_stock = in_stock
+        self.vendor_name = username
 
 
 class TicketDB2DomainConverter(BaseDB2DomainConverter):
@@ -25,4 +26,5 @@ class TicketDomain2DTOConverter(BaseDomain2DTOConverter):
             domain_model.session,
             domain_model.gp_id,
             domain_model.in_stock,
+            domain_model.vendor_name,
         )
