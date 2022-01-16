@@ -1,12 +1,15 @@
 from flask import Flask, request, send_from_directory, make_response
 from flask.json import jsonify
 from flask_cors import CORS
+from werkzeug.wrappers import response
 from swagger_ui import api_doc
 
 from Repository.factory import RepositoryFactory
 from Domain.user import User
 from Domain.gp import GrandPrix, GrandPrixDomain2DTOConverter
 from Domain.ticket import Ticket, TicketDomain2DTOConverter
+
+from jwt import TokenStorage
 
 
 app = Flask(__name__)
@@ -18,6 +21,20 @@ repository_factory = None
 user_repository = None
 gp_repository = None
 ticket_repository = None
+token_storage = None
+
+
+def check_token(func):
+    def wrapper(**args):
+        token_string = request.headers['Authorization']
+        print(f"TOKEN: {token_string}")
+        if not token_storage.token_exists(token_string):
+            return send_error(401)
+        else:
+            return func(**args)
+
+    wrapper.__name__ = func.__name__
+    return wrapper
 
 
 def send_ok(status_code, payload=None):
@@ -25,9 +42,13 @@ def send_ok(status_code, payload=None):
         "ok": True,
         "status_code": str(status_code),
     }
-    if payload:
-        response["payload"] = payload
-    return jsonify(response), status_code
+    if payload is not None:
+        response["result"] = payload
+    
+    response = jsonify(response)
+    # response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS, POST, PUT, PATCH, DELETE'
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response, status_code
 
 
 def send_error(error_code):
@@ -68,6 +89,7 @@ def register_user():
         return send_error(400)
 
     new_user = User(
+        None,
         req["username"],
         req["password"],
         req["role"]
@@ -77,7 +99,18 @@ def register_user():
         user_repository.create(new_user)
     except:
         return send_error(500)
-    return send_ok(201)
+
+    users = user_repository.get()
+    for user in users:
+        if user.username == new_user.username:
+            token_string = token_storage.create_token()
+            response = {
+                'id': user.id,
+                'role': user.role,
+                'token': token_string
+            }
+            return send_ok(201, response)
+    return send_error(400)
 
 
 @app.route("/api/v1/users/login", methods=['POST'])
@@ -91,23 +124,33 @@ def login_user():
     users = user_repository.get()
     for user in users:
         if (user.username == username) and (user.password == password):
-            return send_ok(202)
+            token_string = token_storage.create_token()
+            print(f"CREATE TOKEN: {token_string}")
+            response = {
+                'id': user.id,
+                'role': user.role,
+                'token': token_string
+            }
+            return send_ok(202, response)
 
     return send_error(400)
 
 #################################
 
 @app.route("/api/v1/grands-prix", methods=['GET'])
+@check_token
 def get_grandsprix():
     gps = gp_repository.get()
 
     converter = GrandPrixDomain2DTOConverter()
     dto_gps = list(map(lambda x: converter.convert(x).to_dict(), gps))
 
-    return jsonify({ "result": dto_gps, "ok": True }), 200
+    response = jsonify({ "result": dto_gps, "ok": True })
+    return response, 200
 
 
 @app.route("/api/v1/grands-prix", methods=['POST'])
+@check_token
 def create_grandprix():
     req = request.json
     if (not req) or (not "title" in req) or (not "date" in req) or (not "vendor_id" in req):
@@ -133,27 +176,32 @@ def create_grandprix():
 
 
 @app.route("/api/v1/grands-prix/<int:gp_id>", methods=['DELETE'])
+@check_token
 def delete_grandprix(gp_id):
     try:
         gp_repository.delete(gp_id)
     except:
         return send_error(500)
 
-    return send_ok()
+    return send_ok(204)
 
 #################################
 
 @app.route("/api/v1/tickets/<int:gp_id>", methods=['GET'])
+@check_token
 def get_gp_tickets(gp_id):
     tickets = ticket_repository.get(gp_id=gp_id)
 
     converter = TicketDomain2DTOConverter()
     dto_tickets = list(map(lambda x: converter.convert(x).to_dict(), tickets))
 
-    return jsonify({ "result": dto_tickets, "ok": True }), 200
+    response = jsonify({ "result": dto_tickets, "ok": True })
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response, 200
 
 
 @app.route("/api/v1/tickets", methods=['POST'])
+@check_token
 def create_ticket():
     req = request.json
     if (not req) or (not "price" in req) or (not "session" in req) or (not "gp_id" in req):
@@ -164,7 +212,8 @@ def create_ticket():
         req["price"],
         req["session"],
         req["gp_id"],
-        True
+        True,
+        None
     )
 
     try:
@@ -176,16 +225,18 @@ def create_ticket():
 
 
 @app.route("/api/v1/tickets/<int:ticket_id>", methods=['DELETE'])
+@check_token
 def delete_ticket(ticket_id):
     try:
         ticket_repository.delete(ticket_id)
     except:
         return send_error(500)
 
-    return send_ok()
+    return send_ok(204)
 
 
 @app.route("/api/v1/tickets/buy", methods=['PATCH'])
+@check_token
 def buy_ticket():
     req = request.json
     if (not req) or (not "ticket_id" in req):
@@ -217,13 +268,15 @@ def server_error():
 
 
 def run_app(args):
-    global user_repository, gp_repository, ticket_repository, cors  # I'm sorry
+    global user_repository, gp_repository, ticket_repository, cors, token_storage  # I'm sorry
 
     repository_factory = RepositoryFactory(args.db_port, True if args.readonly == "false" else False)
     user_repository = repository_factory.create_user_repository()
     gp_repository = repository_factory.create_gp_repository()
     ticket_repository = repository_factory.create_ticket_repository()
 
-    cors = CORS(app)
+    token_storage = TokenStorage()
+
+    cors = CORS(app, resources={r"/*": {"origins": "*"}})
     app.logger.disabled = True
     app.run(debug=True, port=int(args.server_port))

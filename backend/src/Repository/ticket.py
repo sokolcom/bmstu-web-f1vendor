@@ -16,21 +16,21 @@ class TicketRepository(BaseRepository):
     def __init__(self, conn):
         self.conn = conn
 
-    def get(self, id=0, gp_id=0):
+    def get(self, id=None, gp_id=None):
         cursor = self.conn.cursor()
 
-        if id:
+        if id is not None:
             cursor.execute(
                 f'SELECT t.*, u.username \
                 FROM tickets t JOIN gps g ON t.gp_id = g.id JOIN users u on g.vendor_id = u.id \
-                WHERE id = {id};'
+                WHERE t.id = {id};'
             )
             tickets = cursor.fetchall()
-        elif gp_id:
+        elif gp_id is not None:
             cursor.execute(
                 f'SELECT t.*, u.username \
                 FROM tickets t JOIN gps g ON t.gp_id = g.id JOIN users u on g.vendor_id = u.id \
-                WHERE gp_id = {gp_id};'
+                WHERE t.gp_id = {gp_id};'
             )
             tickets = cursor.fetchall()
 
