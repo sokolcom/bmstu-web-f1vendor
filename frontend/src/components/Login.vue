@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import APIHandler from '@/services/api'
 /* eslint-disable */
 export default {    
     data() {
@@ -34,27 +34,17 @@ export default {
     methods: {
         handleSignIn(e) {
             e.preventDefault()
-            axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-            if (this.password.length > 0) {
-                axios.post('http://localhost:8888/api/v1/users/login', {
-                    username: this.username,
-                    password: this.password
-                },
-                { headers: {}, useCredentails: true })
-                .then(response => {
-                    console.log(response.data.result);
-                    let data = response.data.result;
-                    localStorage.clear();
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('role', data.role);
-                    localStorage.setItem('id', data.id);
+
+            const api = new APIHandler();
+            api.login(this.username, this.password)
+                .then(() => {
+                    console.log("YEAH!!!! PASSED!!!");
                     this.$router.push('/gps');
                 })
                 .catch(function (error) {
                     alert(`Authorization FAILED!\n${error}`);
                     console.error(error.response);
                 });
-            }
         }
     }  
 }

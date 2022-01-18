@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import Storage from '@/services/storage'
 /* eslint-disable */
 export default {
   name: 'App',
@@ -27,19 +28,20 @@ export default {
   },
   methods: {
       logout() {
-          localStorage.removeItem('token');
-          localStorage.removeItem('role');
-          localStorage.removeItem('id');
+        const storage = new Storage(window.localStorage);
+        storage.clear();
       }
-    },
+  },
   created() {
-    this.token = localStorage.getItem('token');
-    this.role = localStorage.getItem('role');
+    const storage = new Storage(window.localStorage);
+    this.token = storage.get('token');
+    this.role = storage.get('role');
   },
   watch: {
     $route (to, from) {
-      this.token = localStorage.getItem('token');
-      this.role = localStorage.getItem('role');
+      const storage = new Storage(window.localStorage);
+      this.token = storage.get('token');
+      this.role = storage.get('role');
     }
   }
 }

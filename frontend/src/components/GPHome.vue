@@ -28,7 +28,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+import APIHandler from '@/services/api'
+import Storage from '@/services/storage'
 
 /* eslint-disable */
 export default {
@@ -46,14 +47,9 @@ export default {
       this.$router.push('/gps/add');
     },
     deleteGP(gpId) {
-      const path = `http://localhost:8888/api/v1/grands-prix/${gpId}`;
-      let token = localStorage.getItem('token');
-      axios.delete(path, {
-        headers: {
-          'Authorization': token
-        }
-      })
-        .then((res) => {
+      const api = new APIHandler();
+      api.deleteGP(gpId)
+        .then(() => {
           this.fetchGPs();
         })
         .catch((error) => {
@@ -61,14 +57,10 @@ export default {
         });
     },
     fetchGPs() {
-      const path = 'http://localhost:8888/api/v1/grands-prix';
-      let token = localStorage.getItem('token');
-      axios.get(path, {
-        headers: {
-          'Authorization': token
-        }
-      })
+      const api = new APIHandler();
+      api.fetchGPs()
         .then((res) => {
+          console.log('FETCHED!', res.data.result);
           this.gps = res.data.result;
           if (this.role === 'vendor') {
             this.gps = this.gps.filter(item => (item.vendor_id == this.id));
@@ -81,8 +73,9 @@ export default {
     }
   },
   created() {
-    this.id = localStorage.getItem('id');
-    this.role = localStorage.getItem('role');
+    const storage = new Storage(window.localStorage);
+    this.id = storage.get('id');
+    this.role = storage.get('role');
     this.fetchGPs();
   }
 }

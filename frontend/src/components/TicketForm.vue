@@ -38,7 +38,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+import APIHandler from '@/services/api'
+import Storage from '@/services/storage'
 
 /*eslint-disable*/
 export default {
@@ -53,37 +54,28 @@ export default {
     methods: {
         handleAddTicket(e) {
             e.preventDefault();
+
             const session = this.sessionFriday | this.sessionSaturday | this.sessionSunday;
-            if ((this.price > 0) && (session !== 0)) {
-                const path = 'http://localhost:8888/api/v1/tickets';
-                const token = localStorage.getItem('token');
-                const gpId = this.$route.params.gpId;
-                axios.post(path, {
-                    "price": this.price,
-                    "session": session,
-                    "gp_id": gpId
-                }, {
-                    headers: {
-                        'Authorization': token
-                    }
+            const api = new APIHandler();
+
+            api.addTicket(this.price, session, this.$route.params.gpId)
+                .then(() => {
+                    this.$router.push(`/tickets/${this.$route.params.gpId}`);
                 })
-                    .then((res) => {
-                        this.$router.push(`/tickets/${this.$route.params.gpId}`);
-                    })
-                    .catch((error) => {
-                        console.error(`ERROR while adding ticket: ${error}`);
-                    });
-            } else {
-                alert("Some information is missing!\nFill price & session and try again!");
-            }
+                .catch((error) => {
+                    alert(error);
+                    console.error(`ERROR while adding ticket: ${error}`);
+                });
         },
         goBack() {
             this.$router.push(`/tickets/${this.$route.params.gpId}`);
-        },
-        created() {
-            if (localStorage.getItem('id') === 'client') {
-                this.$router.push('/gps');
-            }
+        }
+    },
+    created() {
+        const storage = new Storage(window.localStorage);
+
+        if (storage.get('role') !== 'vendor') {
+            this.$router.push('/gps');
         }
     }
 }

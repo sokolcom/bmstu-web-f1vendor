@@ -27,7 +27,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+import APIHandler from '@/services/api'
+import Storage from '@/services/storage'
 
 /*eslint-disable*/
 export default {
@@ -38,6 +39,7 @@ export default {
             ('0' + (today.getMonth() + 1)).slice(-2) + '-' + 
             ('0' + today.getDate()).slice(-2);
         return {
+            id: "",
             gpTitle: "",
             gpDate: todayDate
         }
@@ -45,37 +47,28 @@ export default {
     methods: {
         handleAddGP(e) {
             e.preventDefault();
-            if (this.gpTitle.length > 0) {
-                const path = 'http://localhost:8888/api/v1/grands-prix';
-                const token = localStorage.getItem('token');
-                const userId = localStorage.getItem('id');
-                axios.post(path, {
-                    "title": this.gpTitle,
-                    "date": this.gpDate,
-                    "vendor_id": userId
-                }, {
-                    headers: {
-                        'Authorization': token
-                    }
+
+            const api = new APIHandler();
+            api.addGP(this.gpTitle, this.gpDate, this.id)
+                .then(() => {
+                    this.$router.push('/gps');
                 })
-                    .then((res) => {
-                        this.$router.push('/gps');
-                    })
-                    .catch((error) => {
-                        console.error(`ERROR while adding GP: ${error}`);
-                    });
-            } else {
-                alert("GP title is missing!\nAdd one and try again!");
-            }
+                .catch((error) => {
+                    alert(error);
+                    console.error(`ERROR while adding GP: ${error}`);
+                });
         },
         goBack() {
             this.$router.push('/gps');
-        },
-        created() {
-            if (localStorage.getItem('id') === 'client') {
-                this.$router.push('/gps');
-            }
         }
+    },
+    created() {
+        const storage = new Storage(window.localStorage);
+
+        if (storage.get('role') !== 'vendor') {
+            this.$router.push('/gps');
+        }
+        this.id = storage.get('id');
     }
 }
 </script>

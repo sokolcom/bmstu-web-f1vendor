@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import APIHandler from '@/services/api'
 /* eslint-disable */
 export default {
     props : ["nextUrl"],
@@ -52,46 +52,21 @@ export default {
     },
     methods : {
         handleSignUp(e) {
-             e.preventDefault();
-            if (this.username.length == 0) {
-                this.password = "";
-                this.passwordConfirmation = "";
-                return alert("Username's missing!\nTry again!");
-            }
-            if (this.role.length == 0) {
-                this.password = "";
-                this.passwordConfirmation = "";
-                return alert("Role's missing!\nTry again!");
-            }
-            if ((this.password.length > 0) && (this.password === this.passwordConfirmation))
-            {
-                let url = "http://localhost:8888/api/v1/users"
-                console.log(this.username, this.password, this.role);
-                axios.post(url, {
-                    username: this.username,
-                    password: this.password,
-                    role: this.role
-                })
-                    .then(response => {
-                        console.log(response.data);
-                        let data = response.data.result;
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('role', data.role);
-                        localStorage.setItem('id', data.id);
-
-                        (this.$route.params.nextUrl != null) ? 
-                            this.$router.push(this.$route.params.nextUrl) :
-                            this.$router.push('/gps');
-                    })
-                    .catch((error) => {
-                        alert(`Registration FAILED!\n${error}`);
-                        console.error(`ERROR while retrieving data: ${error}`);
-                    });
-            } else {
-                this.password = "";
-                this.passwordConfirmation = "";
-                return alert("Passwords do not match!\nTry again!");
-            }
+            e.preventDefault();
+            
+            const api = new APIHandler();
+            api.signup(this.username, this.password, this.passwordConfirmation, this.role)
+                .then(() => 
+                    (this.$route.params.nextUrl != null) ? 
+                        this.$router.push(this.$route.params.nextUrl) :
+                        this.$router.push('/gps')
+                )
+                .catch((error) => {
+                    this.password = "";
+                    this.passwordConfirmation = "";
+                    alert(`Registration FAILED!\n${error}`);
+                    console.error(`ERROR while retrieving data: ${error}`);
+                });
         }
     }
 }

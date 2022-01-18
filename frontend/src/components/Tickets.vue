@@ -23,7 +23,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+import APIHandler from '@/services/api'
+import Storage from '@/services/storage'
 
 /* eslint-disable */
 export default {
@@ -51,16 +52,8 @@ export default {
       return result.replace(/^\-+|\-+$/g, '');
     },
     buyTicket(ticketId) {
-      const path = 'http://localhost:8888/api/v1/tickets/buy';
-      let token = localStorage.getItem('token');
-      axios.patch(path,
-        {
-          'ticket_id': ticketId,
-        }, {
-          headers: {
-          'Authorization': token
-        }
-      })
+      const api = new APIHandler();
+      api.buyTicket(ticketId)
         .then((res) => {
           console.log(res);
           alert("CONGRATS!!!\nTicket is yours!!!!!!!");
@@ -75,13 +68,8 @@ export default {
         this.$router.push({ name: `TicketForm`, params: { gpId: this.$route.params.gp_id } });
     },
     deleteTicket(ticketId) {
-      const path = `http://localhost:8888/api/v1/tickets/${ticketId}`;
-      let token = localStorage.getItem('token');
-      axios.delete(path, {
-          headers: {
-          'Authorization': token
-        }
-      })
+      const api = new APIHandler();
+      api.deleteTicket(ticketId)
         .then((res) => {
           console.log(res);
           this.fetchTickets();
@@ -91,25 +79,20 @@ export default {
         }); 
     },
     fetchTickets() {
-      const path = `http://localhost:8888/api/v1/tickets/${this.$route.params.gp_id}`;
-      let token = localStorage.getItem('token');
-      axios.get(path, {
-        headers: {
-          'Authorization': token
-        }
-      })
+      const api = new APIHandler();
+      api.fetchTickets(this.$route.params.gp_id)
         .then((res) => {
           this.tickets = res.data.result;
         })
         .catch((error) => {
-          localStorage.clear();
           this.$router.push('/login');
           console.error(`ERROR while retrieving data: ${error}`);
         });
     }
   },
   created() {
-    this.role = localStorage.getItem('role');
+    const storage = new Storage(window.localStorage);
+    this.role = storage.get('role');
     this.fetchTickets();
   }
 }
