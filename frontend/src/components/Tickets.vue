@@ -31,7 +31,8 @@ export default {
   data() {
     return {
       tickets: [],
-      role: null
+      role: null, 
+      apiClient: null
     };
   },
   methods: {
@@ -52,8 +53,7 @@ export default {
       return result.replace(/^\-+|\-+$/g, '');
     },
     buyTicket(ticketId) {
-      const api = new APIHandler();
-      api.buyTicket(ticketId)
+      this.apiClient.buyTicket(ticketId)
         .then((res) => {
           console.log(res);
           alert("CONGRATS!!!\nTicket is yours!!!!!!!");
@@ -68,8 +68,7 @@ export default {
         this.$router.push({ name: `TicketForm`, params: { gpId: this.$route.params.gp_id } });
     },
     deleteTicket(ticketId) {
-      const api = new APIHandler();
-      api.deleteTicket(ticketId)
+      this.apiClient.deleteTicket(ticketId)
         .then((res) => {
           console.log(res);
           this.fetchTickets();
@@ -79,8 +78,7 @@ export default {
         }); 
     },
     fetchTickets() {
-      const api = new APIHandler();
-      api.fetchTickets(this.$route.params.gp_id)
+      this.apiClient.fetchTickets(this.$route.params.gp_id)
         .then((res) => {
           this.tickets = res.data.result;
         })
@@ -93,6 +91,8 @@ export default {
   created() {
     const storage = new Storage(window.localStorage);
     this.role = storage.get('role');
+    this.apiClient = new APIHandler();
+
     this.fetchTickets();
   }
 }

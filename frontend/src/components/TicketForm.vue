@@ -48,7 +48,8 @@ export default {
             price: "",
             sessionFriday: 0,
             sessionSaturday: 0,
-            sessionSunday: 0
+            sessionSunday: 0, 
+            apiClient: null
         }
     },
     methods: {
@@ -56,9 +57,8 @@ export default {
             e.preventDefault();
 
             const session = this.sessionFriday | this.sessionSaturday | this.sessionSunday;
-            const api = new APIHandler();
 
-            api.addTicket(this.price, session, this.$route.params.gpId)
+            this.apiClient.addTicket(this.price, session, this.$route.params.gpId)
                 .then(() => {
                     this.$router.push(`/tickets/${this.$route.params.gpId}`);
                 })
@@ -77,6 +77,8 @@ export default {
         if (storage.get('role') !== 'vendor') {
             this.$router.push('/gps');
         }
+
+        this.apiClient = new APIHandler();
     }
 }
 </script>

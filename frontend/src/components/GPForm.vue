@@ -41,15 +41,15 @@ export default {
         return {
             id: "",
             gpTitle: "",
-            gpDate: todayDate
+            gpDate: todayDate, 
+            apiClient: null
         }
     },
     methods: {
         handleAddGP(e) {
             e.preventDefault();
 
-            const api = new APIHandler();
-            api.addGP(this.gpTitle, this.gpDate, this.id)
+            this.apiClient.addGP(this.gpTitle, this.gpDate, this.id)
                 .then(() => {
                     this.$router.push('/gps');
                 })
@@ -69,6 +69,7 @@ export default {
             this.$router.push('/gps');
         }
         this.id = storage.get('id');
+        this.apiClient = new APIHandler();
     }
 }
 </script>

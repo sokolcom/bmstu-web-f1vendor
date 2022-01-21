@@ -5,6 +5,8 @@ import HTTPHandler from '@/services/http'
 import Storage from '@/services/storage'
 
 export default class APIHandler {
+    constructor() { this.storage = new Storage(window.localStorage); }
+
     login(username, password) {
         if (password.length > 0) {
             const http = new HTTPHandler('http://localhost:8888/api/v1/users/login');
@@ -17,13 +19,12 @@ export default class APIHandler {
                     .then(response => {
                         console.log("Sooooo.....");
                         console.log(response.data.result);
-                        let data = response.data.result;
+                        const data = response.data.result;
 
-                        const storage = new Storage(window.localStorage);
-                        storage.clear();
-                        storage.set('token', data.token);
-                        storage.set('role', data.role);
-                        storage.set('id', data.id);
+                        this.storage.clear();
+                        this.storage.set('token', data.token);
+                        this.storage.set('role', data.role);
+                        this.storage.set('id', data.id);
                     })
                     .catch(function (error) { console.log("Whoops!"); return Promise.reject(error);  })
             )
@@ -53,11 +54,10 @@ export default class APIHandler {
                         console.log(response.data);
                         const data = response.data.result;
 
-                        const storage = new Storage(window.localStorage);
-                        storage.clear();
-                        storage.set('token', data.token);
-                        storage.set('role', data.role);
-                        storage.set('id', data.id);
+                        this.storage.clear();
+                        this.storage.set('token', data.token);
+                        this.storage.set('role', data.role);
+                        this.storage.set('id', data.id);
                     })
                     .catch((error) => {
                         return Promise.reject(error);
@@ -69,8 +69,7 @@ export default class APIHandler {
     }
 
     fetchGPs() {
-        const storage = new Storage(window.localStorage);
-        const token = storage.get('token');
+        const token = this.storage.get('token');
 
         const http = new HTTPHandler('http://localhost:8888/api/v1/grands-prix');
         return Promise.resolve(
@@ -83,8 +82,7 @@ export default class APIHandler {
 
     addGP(title, date, userId) {
         if (title.length > 0) {
-            const storage = new Storage(window.localStorage);
-            const token = storage.get('token');
+            const token = this.storage.get('token');
 
             const http = new HTTPHandler('http://localhost:8888/api/v1/grands-prix');
             return Promise.resolve(
@@ -105,8 +103,7 @@ export default class APIHandler {
     }
 
     deleteGP(gpId) {
-        const storage = new Storage(window.localStorage);
-        const token = storage.get('token');
+        const token = this.storage.get('token');
 
         const http = new HTTPHandler(`http://localhost:8888/api/v1/grands-prix/${gpId}`);
         return Promise.resolve(
@@ -118,14 +115,13 @@ export default class APIHandler {
     }
 
     fetchTickets(gpId) {
-        const storage = new Storage(window.localStorage);
-        const token = storage.get('token');
+        const token = this.storage.get('token');
 
         const http = new HTTPHandler(`http://localhost:8888/api/v1/tickets/${gpId}`);
         return Promise.resolve(
             http.get(token)
                 .catch((error) => {
-                    storage.clear();
+                    this.storage.clear();
                     return Promise.reject(error);
                 })
         );
@@ -133,8 +129,7 @@ export default class APIHandler {
 
     addTicket(price, session, gpId) {
         if ((price > 0) && (session !== 0)) {
-            const storage = new Storage(window.localStorage);
-            const token = storage.get('token');
+            const token = this.storage.get('token');
 
             const http = new HTTPHandler('http://localhost:8888/api/v1/tickets');
             return Promise.resolve(
@@ -155,8 +150,7 @@ export default class APIHandler {
     }
 
     deleteTicket(ticketId) {
-        const storage = new Storage(window.localStorage);
-        const token = storage.get('token');
+        const token = this.storage.get('token');
 
         const http = new HTTPHandler(`http://localhost:8888/api/v1/tickets/${ticketId}`);
         return Promise.resolve(
@@ -168,8 +162,7 @@ export default class APIHandler {
     }
 
     buyTicket(ticketId) {
-        const storage = new Storage(window.localStorage);
-        const token = storage.get('token');
+        const token = this.storage.get('token');
 
         const http = new HTTPHandler('http://localhost:8888/api/v1/tickets/buy');
         return Promise.resolve(

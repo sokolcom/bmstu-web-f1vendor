@@ -28,15 +28,15 @@ export default {
     data() {
         return {
             username: "",
-            password: ""
+            password: "", 
+            apiClient: null
         }
     },
     methods: {
         handleSignIn(e) {
             e.preventDefault()
 
-            const api = new APIHandler();
-            api.login(this.username, this.password)
+            this.apiClient.login(this.username, this.password)
                 .then(() => {
                     console.log("YEAH!!!! PASSED!!!");
                     this.$router.push('/gps');
@@ -46,6 +46,9 @@ export default {
                     console.error(error.response);
                 });
         }
+    },
+    created() {
+        this.apiClient = new APIHandler();
     }  
 }
 </script>

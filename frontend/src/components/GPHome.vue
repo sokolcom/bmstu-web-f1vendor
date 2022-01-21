@@ -36,7 +36,8 @@ export default {
   data() {
     return {
       gps: [],
-      role: null
+      role: null, 
+      apiClient: null
     };
   },
   methods: {
@@ -47,8 +48,7 @@ export default {
       this.$router.push('/gps/add');
     },
     deleteGP(gpId) {
-      const api = new APIHandler();
-      api.deleteGP(gpId)
+      this.apiClient.deleteGP(gpId)
         .then(() => {
           this.fetchGPs();
         })
@@ -57,8 +57,7 @@ export default {
         });
     },
     fetchGPs() {
-      const api = new APIHandler();
-      api.fetchGPs()
+      this.apiClient.fetchGPs()
         .then((res) => {
           console.log('FETCHED!', res.data.result);
           this.gps = res.data.result;
@@ -76,6 +75,8 @@ export default {
     const storage = new Storage(window.localStorage);
     this.id = storage.get('id');
     this.role = storage.get('role');
+    this.apiClient = new APIHandler();
+
     this.fetchGPs();
   }
 }

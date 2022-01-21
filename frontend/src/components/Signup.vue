@@ -47,15 +47,15 @@ export default {
             username : "",
             password : "",
             passwordConfirmation : "",
-            role : ""
+            role : "", 
+            apiClient: null
         }
     },
     methods : {
         handleSignUp(e) {
             e.preventDefault();
             
-            const api = new APIHandler();
-            api.signup(this.username, this.password, this.passwordConfirmation, this.role)
+            this.apiClient.signup(this.username, this.password, this.passwordConfirmation, this.role)
                 .then(() => 
                     (this.$route.params.nextUrl != null) ? 
                         this.$router.push(this.$route.params.nextUrl) :
@@ -68,6 +68,9 @@ export default {
                     console.error(`ERROR while retrieving data: ${error}`);
                 });
         }
+    }, 
+    created() {
+        this.apiClient = new APIHandler();
     }
 }
 </script> 
